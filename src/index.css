@@ -5,7 +5,59 @@
 @tailwind utilities;
 
 @layer base {
+  /* Light mode (default) - Notion.so aesthetic */
   :root {
+    --background: 40 9% 98%;
+    --foreground: 0 0% 10%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 10%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 10%;
+
+    --primary: 220 85% 39%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 40 6% 94%;
+    --secondary-foreground: 0 0% 10%;
+
+    --muted: 40 6% 94%;
+    --muted-foreground: 0 0% 45%;
+
+    --accent: 220 85% 39%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 0 0% 91%;
+    --input: 0 0% 91%;
+    --ring: 220 85% 39%;
+
+    --radius: 0.5rem;
+
+    --ice-blue: 207 42% 91%;
+    --powder-blue: 204 35% 75%;
+    --sapphire: 220 85% 39%;
+    --deep-navy: 220 100% 3%;
+
+    --glass-bg: 0 0% 100%;
+    --glow-sapphire: 0 0 16px hsla(220, 85%, 39%, 0.15);
+    --glow-sapphire-strong: 0 0 24px hsla(220, 85%, 39%, 0.25);
+
+    --sidebar-background: 40 6% 97%;
+    --sidebar-foreground: 0 0% 10%;
+    --sidebar-primary: 220 85% 39%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 40 6% 94%;
+    --sidebar-accent-foreground: 0 0% 10%;
+    --sidebar-border: 0 0% 91%;
+    --sidebar-ring: 220 85% 39%;
+  }
+
+  /* Dark mode - Notion app aesthetic */
+  .dark {
     --background: 220 100% 3%;
     --foreground: 207 42% 91%;
 
@@ -34,16 +86,9 @@
     --input: 220 40% 18%;
     --ring: 220 85% 39%;
 
-    --radius: 0.5rem;
-
-    --ice-blue: 207 42% 91%;
-    --powder-blue: 204 35% 75%;
-    --sapphire: 220 85% 39%;
-    --deep-navy: 220 100% 3%;
-
     --glass-bg: 207 42% 91%;
-    --glow-sapphire: 0 0 20px hsla(220, 85%, 39%, 0.33);
-    --glow-sapphire-strong: 0 0 30px hsla(220, 85%, 39%, 0.5);
+    --glow-sapphire: 0 0 16px hsla(220, 85%, 39%, 0.27);
+    --glow-sapphire-strong: 0 0 24px hsla(220, 85%, 39%, 0.44);
 
     --sidebar-background: 220 100% 5%;
     --sidebar-foreground: 207 42% 91%;
@@ -61,8 +106,13 @@
     @apply border-border;
   }
 
+  html {
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
   body {
     @apply bg-background text-foreground font-sans antialiased;
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -71,26 +121,40 @@
 }
 
 @layer components {
+  /* Light mode cards */
   .glass-card {
-    @apply rounded-lg border border-border;
-    background: hsla(207, 42%, 91%, 0.08);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
+    @apply rounded-lg border border-border bg-card;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
   }
 
   .glass-card-strong {
-    @apply rounded-lg border border-border;
-    background: hsla(207, 42%, 91%, 0.12);
+    @apply rounded-lg border border-border bg-card;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+    transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  /* Dark mode cards */
+  .dark .glass-card {
+    background: hsla(207, 42%, 91%, 0.06);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    box-shadow: none;
+  }
+
+  .dark .glass-card-strong {
+    background: hsla(207, 42%, 91%, 0.10);
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
+    box-shadow: none;
   }
 
   .sapphire-glow {
-    box-shadow: 0 0 20px hsla(220, 85%, 39%, 0.33);
+    box-shadow: var(--glow-sapphire);
   }
 
   .sapphire-glow-strong {
-    box-shadow: 0 0 30px hsla(220, 85%, 39%, 0.5);
+    box-shadow: var(--glow-sapphire-strong);
   }
 
   .dot-pattern {
