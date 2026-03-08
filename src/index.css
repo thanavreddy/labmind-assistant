@@ -121,26 +121,40 @@
 }
 
 @layer components {
+  /* Light mode cards */
   .glass-card {
-    @apply rounded-lg border border-border;
-    background: hsla(207, 42%, 91%, 0.08);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
+    @apply rounded-lg border border-border bg-card;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
   }
 
   .glass-card-strong {
-    @apply rounded-lg border border-border;
-    background: hsla(207, 42%, 91%, 0.12);
+    @apply rounded-lg border border-border bg-card;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+    transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  /* Dark mode cards */
+  .dark .glass-card {
+    background: hsla(207, 42%, 91%, 0.06);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    box-shadow: none;
+  }
+
+  .dark .glass-card-strong {
+    background: hsla(207, 42%, 91%, 0.10);
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
+    box-shadow: none;
   }
 
   .sapphire-glow {
-    box-shadow: 0 0 20px hsla(220, 85%, 39%, 0.33);
+    box-shadow: var(--glow-sapphire);
   }
 
   .sapphire-glow-strong {
-    box-shadow: 0 0 30px hsla(220, 85%, 39%, 0.5);
+    box-shadow: var(--glow-sapphire-strong);
   }
 
   .dot-pattern {
