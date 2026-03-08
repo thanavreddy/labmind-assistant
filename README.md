@@ -1,73 +1,97 @@
-# Welcome to your Lovable project
+# LabMind — Guided AI Lab Completion System
 
-## Project info
+LabMind is an AI-powered lab completion platform designed for college students. It guides learners through a structured **3-step workflow** — **Learn → Verify → Record** — transforming how students approach laboratory coursework.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+## What is LabMind?
 
-## How can I edit this code?
+Traditional lab completion is fragmented: students juggle textbooks, copy-paste from the internet, and submit poorly understood records. LabMind solves this by embedding AI guidance directly into the workflow, ensuring students actually *understand* concepts before documenting them.
 
-There are several ways of editing your application.
+### The 3-Step Workflow
 
-**Use Lovable**
+1. **Learn with AI** — Ask the AI assistant any concept question. Get clear, structured explanations with code examples and step-by-step walkthroughs.
+2. **Prove You Understand** — Complete a short comprehension quiz with paste-disabled inputs. No shortcuts — demonstrate genuine understanding before moving on.
+3. **Draft Your Record** — Generate a structured lab record with all required sections: Aim, Theory, Algorithm, Code, Output, and Conclusion.
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+## Features
 
-Changes made via Lovable will be committed automatically to this repo.
+### 🤖 AI Chat Assistant
+A full-width conversational interface where students can ask concept questions, request code walkthroughs, and get instant explanations. Uses JetBrains Mono for code blocks and supports multi-turn conversations.
 
-**Use your preferred IDE**
+### 📝 Concept Check (Comprehension Quiz)
+A 3–5 question verification step with paste-disabled text inputs, ensuring students articulate concepts in their own words. A progress bar tracks completion.
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### 📄 Lab Record Editor
+A structured template editor with labeled sections — Aim, Theory, Algorithm, Code, Output, and Conclusion. The code section uses a Monaco-style editor for syntax-aware input.
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### 📊 Student Dashboard
+Experiment cards with status chips (Pending / In Progress / Done) and progress rings showing completion per experiment. Students can track their journey across multiple courses.
 
-Follow these steps:
+### 👩‍🏫 Professor Dashboard
+A table-based view for instructors to track student progress, review completion statistics, and assign experiments. Sapphire-accented action buttons for quick management.
+
+### 👤 Guest Mode
+Explore the full LabMind workflow without creating an account. Try the AI assistant, browse experiments, and see how the platform works before committing.
+
+## Supported Courses
+
+- Data Structures
+- Operating Systems
+- Database Systems
+- Algorithms (more being added)
+
+## Design
+
+LabMind follows a **"Dark Academic meets Modern SaaS"** aesthetic, inspired by Notion, Linear, and Vercel.
+
+- **Color Palette**: Deep Navy (`#000926`), Sapphire (`#0F52BA`), Ice Blue (`#D6E6F3`), Powder Blue (`#A6C5D7`)
+- **Typography**: DM Sans for headings, JetBrains Mono for code and labels
+- **Dark/Light Mode**: Light mode defaults to a warm Notion-style white; dark mode uses deep navy with glassmorphism cards and sapphire glows
+- **Animations**: Staggered fade-ins, scroll-triggered reveals, count-up stats, infinite marquee strips, and smooth accordion transitions
+
+## Tech Stack
+
+- **React 18** + **TypeScript**
+- **Vite** — fast dev server and builds
+- **Tailwind CSS** — utility-first styling with custom design tokens
+- **shadcn/ui** — accessible, composable UI components
+- **React Router** — client-side routing
+- **Recharts** — data visualization
+- **Lucide React** — icon library
+
+## Getting Started
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
+# Clone the repository
 git clone <YOUR_GIT_URL>
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+# Navigate to the project directory
+cd labmind
 
-# Step 3: Install the necessary dependencies.
-npm i
+# Install dependencies
+npm install
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Start the development server
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+## Project Structure
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+```
+src/
+├── components/       # Shared UI components (AppLayout, Sidebar, ThemeToggle, etc.)
+│   └── ui/           # shadcn/ui primitives
+├── contexts/         # React context providers (ThemeContext)
+├── hooks/            # Custom hooks (useScrollReveal, useCountUp, useMobile)
+├── pages/            # Route-level page components
+│   ├── Landing.tsx
+│   ├── AIAssistant.tsx
+│   ├── ConceptCheck.tsx
+│   ├── LabRecordEditor.tsx
+│   ├── StudentDashboard.tsx
+│   └── ProfessorDashboard.tsx
+└── lib/              # Utilities
+```
 
-**Use GitHub Codespaces**
+## License
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+© 2026 LabMind. All rights reserved.
