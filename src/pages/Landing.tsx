@@ -123,7 +123,7 @@ const Landing = () => {
       <section className="pt-32 pb-20 max-w-6xl mx-auto px-6 text-center">
         <Reveal>
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-border bg-card mb-8">
-            <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
+            <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
             <span className="font-mono text-xs text-muted-foreground tracking-wider">Available for Students</span>
           </div>
         </Reveal>
