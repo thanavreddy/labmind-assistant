@@ -7,97 +7,97 @@
 @layer base {
   /* Light mode (default) - Notion.so aesthetic */
   :root {
-    --background: 40 9% 98%;
-    --foreground: 0 0% 10%;
+    --background: #FAF8F1;
+    --foreground: #1A1A1A;
 
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 10%;
+    --card: #FFFFFF;
+    --card-foreground: #1A1A1A;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 10%;
+    --popover: #FFFFFF;
+    --popover-foreground: #1A1A1A;
 
-    --primary: 220 85% 39%;
-    --primary-foreground: 0 0% 100%;
+    --primary: #0F52BA;
+    --primary-foreground: #FFFFFF;
 
-    --secondary: 40 6% 94%;
-    --secondary-foreground: 0 0% 10%;
+    --secondary: #EFEEEC;
+    --secondary-foreground: #1A1A1A;
 
-    --muted: 40 6% 94%;
-    --muted-foreground: 0 0% 45%;
+    --muted: #EFEEEC;
+    --muted-foreground: #737373;
 
-    --accent: 220 85% 39%;
-    --accent-foreground: 0 0% 100%;
+    --accent: #0F52BA;
+    --accent-foreground: #FFFFFF;
 
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
+    --destructive: #F43F5E;
+    --destructive-foreground: #FFFFFF;
 
-    --border: 0 0% 91%;
-    --input: 0 0% 91%;
-    --ring: 220 85% 39%;
+    --border: #E8E8E8;
+    --input: #E8E8E8;
+    --ring: #0F52BA;
 
     --radius: 0.5rem;
 
-    --ice-blue: 207 42% 91%;
-    --powder-blue: 204 35% 75%;
-    --sapphire: 220 85% 39%;
-    --deep-navy: 220 100% 3%;
+    --ice-blue: #D6E6F3;
+    --powder-blue: #A6C5D7;
+    --sapphire: #0F52BA;
+    --deep-navy: #000926;
 
-    --glass-bg: 0 0% 100%;
-    --glow-sapphire: 0 0 16px hsla(220, 85%, 39%, 0.15);
-    --glow-sapphire-strong: 0 0 24px hsla(220, 85%, 39%, 0.25);
+    --glass-bg: #FFFFFF;
+    --glow-sapphire: 0 0 16px rgba(15, 82, 186, 0.15);
+    --glow-sapphire-strong: 0 0 24px rgba(15, 82, 186, 0.25);
 
-    --sidebar-background: 40 6% 97%;
-    --sidebar-foreground: 0 0% 10%;
-    --sidebar-primary: 220 85% 39%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 40 6% 94%;
-    --sidebar-accent-foreground: 0 0% 10%;
-    --sidebar-border: 0 0% 91%;
-    --sidebar-ring: 220 85% 39%;
+    --sidebar-background: #F6F5F3;
+    --sidebar-foreground: #1A1A1A;
+    --sidebar-primary: #0F52BA;
+    --sidebar-primary-foreground: #FFFFFF;
+    --sidebar-accent: #EFEEEC;
+    --sidebar-accent-foreground: #1A1A1A;
+    --sidebar-border: #E8E8E8;
+    --sidebar-ring: #0F52BA;
   }
 
   /* Dark mode - Notion app aesthetic */
   .dark {
-    --background: 220 100% 3%;
-    --foreground: 207 42% 91%;
+    --background: #01040a;
+    --foreground: #D6E6F3;
 
-    --card: 207 42% 91%;
-    --card-foreground: 220 100% 3%;
+    --card: #D6E6F3;
+    --card-foreground: #000926;
 
-    --popover: 220 100% 3%;
-    --popover-foreground: 207 42% 91%;
+    --popover: #000926;
+    --popover-foreground: #D6E6F3;
 
-    --primary: 220 85% 39%;
-    --primary-foreground: 0 0% 100%;
+    --primary: #8EBDF7;
+    --primary-foreground: #000000;
 
-    --secondary: 204 35% 75%;
-    --secondary-foreground: 220 100% 3%;
+    --secondary: #A6C5D7;
+    --secondary-foreground: #000926;
 
-    --muted: 220 50% 12%;
-    --muted-foreground: 204 35% 75%;
+    --muted: #1F2844;
+    --muted-foreground: #A6C5D7;
 
-    --accent: 220 85% 39%;
-    --accent-foreground: 0 0% 100%;
+    --accent: #8EBDF7;
+    --accent-foreground: #FFFFFF;
 
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
+    --destructive: #F43F5E;
+    --destructive-foreground: #FFFFFF;
 
-    --border: 220 40% 18%;
-    --input: 220 40% 18%;
-    --ring: 220 85% 39%;
+    --border: #2E3A60;
+    --input: #2E3A60;
+    --ring: #8EBDF7;
 
-    --glass-bg: 207 42% 91%;
-    --glow-sapphire: 0 0 16px hsla(220, 85%, 39%, 0.27);
-    --glow-sapphire-strong: 0 0 24px hsla(220, 85%, 39%, 0.44);
+    --glass-bg: #D6E6F3;
+    --glow-sapphire: 0 0 16px rgba(15, 82, 186, 0.27);
+    --glow-sapphire-strong: 0 0 24px rgba(15, 82, 186, 0.44);
 
-    --sidebar-background: 220 100% 5%;
-    --sidebar-foreground: 207 42% 91%;
-    --sidebar-primary: 220 85% 39%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 50% 12%;
-    --sidebar-accent-foreground: 207 42% 91%;
-    --sidebar-border: 220 40% 14%;
-    --sidebar-ring: 220 85% 39%;
+    --sidebar-background: #01040a;
+    --sidebar-foreground: #D6E6F3;
+    --sidebar-primary: #8EBDF7;
+    --sidebar-primary-foreground: #FFFFFF;
+    --sidebar-accent: #1F2844;
+    --sidebar-accent-foreground: #D6E6F3;
+    --sidebar-border: #232D4F;
+    --sidebar-ring: #8EBDF7;
   }
 }
 
@@ -136,14 +136,14 @@
 
   /* Dark mode cards */
   .dark .glass-card {
-    background: hsla(207, 42%, 91%, 0.06);
+    background: rgba(214, 230, 243, 0.06);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     box-shadow: none;
   }
 
   .dark .glass-card-strong {
-    background: hsla(207, 42%, 91%, 0.10);
+    background: rgba(214, 230, 243, 0.10);
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
     box-shadow: none;
@@ -158,14 +158,14 @@
   }
 
   .dot-pattern {
-    background-image: radial-gradient(hsla(207, 42%, 91%, 0.08) 1px, transparent 1px);
+    background-image: radial-gradient(rgba(214, 230, 243, 0.08) 1px, transparent 1px);
     background-size: 24px 24px;
   }
 
   .grid-pattern {
     background-image:
-      linear-gradient(hsla(207, 42%, 91%, 0.04) 1px, transparent 1px),
-      linear-gradient(90deg, hsla(207, 42%, 91%, 0.04) 1px, transparent 1px);
+      linear-gradient(rgba(214, 230, 243, 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(214, 230, 243, 0.04) 1px, transparent 1px);
     background-size: 40px 40px;
   }
 

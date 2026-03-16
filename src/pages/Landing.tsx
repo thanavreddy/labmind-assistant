@@ -51,8 +51,12 @@ const FaqItem = ({ q, a }: { q: string; a: string }) => {
         </span>
       </button>
       <div
-        className="overflow-hidden transition-all duration-500"
-        style={{ maxHeight: open ? "300px" : "0px", opacity: open ? 1 : 0 }}
+        className="overflow-hidden"
+        style={{
+          maxHeight: open ? "500px" : "0px",
+          opacity: open ? 1 : 0,
+          transition: "all 500ms cubic-bezier(0.4, 0, 0.2, 1)",
+        }}
       >
         <p className="text-sm text-muted-foreground pb-5 leading-relaxed">{a}</p>
       </div>
@@ -80,7 +84,7 @@ const compRows = [
   { label: "Plagiarism Prevention", labmind: true, traditional: false, none: false },
   { label: "Professor Tracking", labmind: true, traditional: true, none: false },
   { label: "Guest Access", labmind: true, traditional: false, none: false },
-  { label: "Cost", labmind: "Free", traditional: "$$", none: "Free" },
+  // { label: "Cost", labmind: "Free", traditional: "$$", none: "Free" },
 ];
 
 /* ─── FAQ data ─── */
@@ -90,7 +94,7 @@ const faqs = [
   { q: "Does LabMind write my lab record for me?", a: "No. LabMind ensures you understand the concepts first through a comprehension quiz (with paste disabled). Only after you prove understanding does it help you draft a structured record." },
   { q: "Can professors track student progress?", a: "Yes. The Professor Dashboard shows completion stats, experiment status, and allows professors to assign experiments to students." },
   { q: "What subjects does LabMind support?", a: "LabMind currently supports Data Structures, Operating Systems, and Database Systems labs, with more courses being added regularly." },
-  { q: "How does the AI assistant work?", a: "The AI assistant explains concepts step-by-step, provides code walkthroughs, and answers questions about your current experiment. It's like having a teaching assistant available 24/7." },
+  { q: "How does the AI assistant work?", a: "The AI assistant explains concepts step-by-step, provides code walkthroughs, and answers questions about your current experiment. It's like having a teaching assistant  24/7." },
 ];
 
 const Landing = () => {
@@ -122,10 +126,7 @@ const Landing = () => {
       {/* ═══ Hero ═══ */}
       <section className="pt-32 pb-20 max-w-6xl mx-auto px-6 text-center">
         <Reveal>
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-border bg-card mb-8">
-            <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
-            <span className="font-mono text-xs text-muted-foreground tracking-wider">Available for Students</span>
-          </div>
+        <div className="p-6"></div>
         </Reveal>
 
         <div className="max-w-4xl mx-auto">
