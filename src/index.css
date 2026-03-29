@@ -7,7 +7,7 @@
 @layer base {
   /* Light mode (default) - Notion.so aesthetic */
   :root {
-    --background: #FAF8F1;
+    --background: rgba(245, 249, 255, 0.565);
     --foreground: #1A1A1A;
 
     --card: #FFFFFF;
@@ -46,7 +46,7 @@
     --glow-sapphire: 0 0 16px rgba(15, 82, 186, 0.15);
     --glow-sapphire-strong: 0 0 24px rgba(15, 82, 186, 0.25);
 
-    --sidebar-background: #F6F5F3;
+    --sidebar-background: #rgba(245, 249, 255, 0.565);
     --sidebar-foreground: #1A1A1A;
     --sidebar-primary: #0F52BA;
     --sidebar-primary-foreground: #FFFFFF;

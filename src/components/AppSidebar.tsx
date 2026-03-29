@@ -30,8 +30,8 @@ const mainItems = [
 ];
 
 const dashItems = [
-  { title: "Student Dashboard", url: "/dashboard", icon: LayoutDashboard },
-  { title: "Professor View", url: "/professor", icon: Users },
+  { title: "Student Dashboard", url: "/student-dashboard", icon: LayoutDashboard },
+  { title: "Professor View", url: "/professor-dashboard", icon: Users },
 ];
 
 export function AppSidebar() {
