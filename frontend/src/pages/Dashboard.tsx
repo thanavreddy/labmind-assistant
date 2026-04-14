@@ -15,6 +15,6 @@ export default function Dashboard() {
   if (role === 'professor') return <Navigate to="/professor-dashboard" replace />
   if (role === 'student') return <Navigate to="/student-dashboard" replace />
 
-  // Role not set yet (shouldn't happen, but safety net)
+  // Role is null — user authenticated but hasn't selected role yet
   return <Navigate to="/select-role" replace />
 }

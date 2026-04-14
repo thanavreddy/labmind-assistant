@@ -1,169 +1,168 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
-import { Session, User } from '@supabase/supabase-js'
-import { supabase, isAllowedEmail } from '@/lib/supabase'
-
-type Role = 'student' | 'professor' | null
+import { createContext, useContext, useEffect, useState, useCallback } from "react";
+import { supabase } from "@/lib/supabase";
+import { User, Session } from "@supabase/supabase-js";
 
 interface AuthContextType {
-  user: User | null
-  session: Session | null
-  role: Role
-  loading: boolean
-  signUpWithEmail: (email: string, password: string, fullName: string, role: Role) => Promise<{ error: string | null }>
-  signInWithEmail: (email: string, password: string) => Promise<{ error: string | null }>
-  signInWithGoogle: () => Promise<{ error: string | null }>
-  signOut: () => Promise<void>
+  user: User | null;
+  session: Session | null;
+  role: "student" | "professor" | null;
+  loading: boolean;
+  /** Call this after saving role in SelectRole to update context immediately. */
+  setRoleDirectly: (role: "student" | "professor") => void;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined)
+const AuthContext = createContext<AuthContextType>({
+  user: null,
+  session: null,
+  role: null,
+  loading: true,
+  setRoleDirectly: () => {},
+});
 
-export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null)
-  const [session, setSession] = useState<Session | null>(null)
-  const [role, setRole] = useState<Role>(null)
-  const [loading, setLoading] = useState(true)
+export const useAuth = () => useContext(AuthContext);
 
-  const fetchRole = async (userId: string): Promise<Role> => {
-    const queryPromise: Promise<Role> = (async () => {
-      try {
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('id', userId)
-          .single()
-        if (error) {
-          console.error('Error fetching role:', error)
-          return null
-        }
-        return (data?.role ?? null) as Role
-      } catch (err) {
-        console.error('fetchRole threw:', err)
-        return null
-      }
-    })()
+// ─── Role cache ───────────────────────────────────────────────────────────────
+const CACHE_KEY = (uid: string) => `lm_role_${uid}`;
 
-    // 4-second safety net — if Supabase hangs, resolve null instead of blocking forever
-    const timeout: Promise<Role> = new Promise((resolve) =>
-      setTimeout(() => {
-        console.warn('fetchRole timed out after 4s, resolving null')
-        resolve(null)
-      }, 4000)
-    )
+const readCachedRole = (uid: string): "student" | "professor" | null => {
+  try {
+    const v = localStorage.getItem(CACHE_KEY(uid));
+    return v === "student" || v === "professor" ? v : null;
+  } catch { return null; }
+};
 
-    return Promise.race([queryPromise, timeout])
-  }
+export const writeCachedRole = (uid: string, role: "student" | "professor" | null) => {
+  try {
+    if (role) localStorage.setItem(CACHE_KEY(uid), role);
+    else localStorage.removeItem(CACHE_KEY(uid));
+  } catch { /* ignore */ }
+};
+
+const clearRoleCache = () => {
+  try {
+    Object.keys(localStorage)
+      .filter((k) => k.startsWith("lm_role_"))
+      .forEach((k) => localStorage.removeItem(k));
+  } catch { /* ignore */ }
+};
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+  const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [role, setRole] = useState<"student" | "professor" | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  /** Exposed so SelectRole can update role state instantly after saving. */
+  const setRoleDirectly = useCallback((r: "student" | "professor") => {
+    setRole(r);
+  }, []);
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      console.log('onAuthStateChange fired', _event, session?.user?.email)
-      
-      setSession(session)
-      setUser(session?.user ?? null)
+    let isMounted = true;
+    let resolved = false;
 
-      try {
-        if (session?.user) {
-          if (!isAllowedEmail(session.user.email ?? '')) {
-            console.log('Email not allowed, signing out')
-            await supabase.auth.signOut()
-            setUser(null)
-            setSession(null)
-            setRole(null)
+    // Called at most once — prevents any double-resolve race
+    const resolveLoading = () => {
+      if (!resolved && isMounted) {
+        resolved = true;
+        setLoading(false);
+      }
+    };
+
+    /**
+     * Fetches (or creates) the profile row entirely in the background.
+     * NEVER awaited in the critical init path — loading is not gated on this.
+     */
+    const syncProfileInBackground = (u: User) => {
+      Promise.resolve(
+        supabase
+          .from("profiles")
+          .select("role")
+          .eq("id", u.id)
+          .maybeSingle()
+      )
+        .then(({ data, error }) => {
+          if (!isMounted) return;
+          if (error) { console.error("[Auth] profile fetch error:", error); return; }
+
+          if (!data) {
+            // Create row for first-time user
+            Promise.resolve(
+              supabase.from("profiles").insert({
+                id: u.id,
+                email: u.email,
+                full_name: u.user_metadata?.full_name ?? "",
+                role: null,
+              })
+            ).then(({ error: ie }) => {
+              if (ie && ie.code !== "23505") console.error("[Auth] insert error:", ie);
+            });
+            writeCachedRole(u.id, null);
+            if (isMounted) setRole(null);
           } else {
-            console.log('Fetching role for', session.user.id)
-            const userRole = await fetchRole(session.user.id)
-            console.log('Role fetched:', userRole)
-            setRole(userRole)
+            const fetched = data.role as "student" | "professor" | null;
+            writeCachedRole(u.id, fetched);
+            if (isMounted) setRole(fetched);
           }
-        } else {
-          setRole(null)
-        }
-      } finally {
-        // Always runs — even if fetchRole hangs and times out
-        console.log('Setting loading to false')
-        setLoading(false)
+        })
+        .catch((err) => console.error("[Auth] unexpected profile error:", err));
+    };
+
+    // ── Hard safety net: 6 s cap ──────────────────────────────────────────────
+    const safetyTimer = setTimeout(() => {
+      console.warn("[Auth] timeout — forcing loading=false");
+      resolveLoading();
+    }, 6000);
+
+    // ── Single source of truth ────────────────────────────────────────────────
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, s) => {
+      if (!isMounted) return;
+      console.log("[Auth] event:", event);
+
+      if (event === "SIGNED_OUT") {
+        clearRoleCache();
+        setSession(null);
+        setUser(null);
+        setRole(null);
+        resolveLoading();
+        return;
       }
-    })
 
-    return () => subscription.unsubscribe()
-  }, [])
+      // Handle INITIAL_SESSION, SIGNED_IN, TOKEN_REFRESHED, USER_UPDATED
+      setSession(s);
+      setUser(s?.user ?? null);
 
-  const signUpWithEmail = async (
-    email: string,
-    password: string,
-    fullName: string,
-    role: Role
-  ): Promise<{ error: string | null }> => {
-    if (!isAllowedEmail(email)) {
-      return { error: `Only @cbit.org.in email addresses are allowed.` }
-    }
-
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: { full_name: fullName, role }
+      if (!s?.user) {
+        setRole(null);
+        resolveLoading(); // no user → done immediately
+        return;
       }
-    })
 
-    if (error) return { error: error.message }
-    if (!data.user) return { error: 'Signup failed. Please try again.' }
-
-    return { error: null }
-  }
-
-  const signInWithEmail = async (email: string, password: string): Promise<{ error: string | null }> => {
-    if (!isAllowedEmail(email)) {
-      return { error: `Only @cbit.org.in email addresses are allowed.` }
-    }
-
-    console.log('Calling signInWithPassword...')
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
-    console.log('signInWithPassword result:', error)
-
-    if (error) return { error: error.message }
-    return { error: null }
-  }
-
-  const signInWithGoogle = async (): Promise<{ error: string | null }> => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-        queryParams: {
-          hd: 'cbit.org.in'
-        }
+      // ── Set role from cache instantly, THEN sync in background ────────────
+      const cached = readCachedRole(s.user.id);
+      if (cached !== null) {
+        setRole(cached);
       }
-    })
+      // loading ALWAYS resolves here — never gated on a network call
+      resolveLoading();
 
-    if (error) return { error: error.message }
-    return { error: null }
-  }
+      // Sync profile in background on session events (verifies / creates row)
+      if (event === "INITIAL_SESSION" || event === "SIGNED_IN") {
+        syncProfileInBackground(s.user);
+      }
+    });
 
-  const signOut = async () => {
-    await supabase.auth.signOut()
-    setUser(null)
-    setSession(null)
-    setRole(null)
-  }
+    return () => {
+      isMounted = false;
+      clearTimeout(safetyTimer);
+      subscription.unsubscribe();
+    };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <AuthContext.Provider value={{
-      user,
-      session,
-      role,
-      loading,
-      signUpWithEmail,
-      signInWithEmail,
-      signInWithGoogle,
-      signOut
-    }}>
+    <AuthContext.Provider value={{ user, session, role, loading, setRoleDirectly }}>
       {children}
     </AuthContext.Provider>
-  )
-}
-
-export const useAuth = () => {
-  const context = useContext(AuthContext)
-  if (!context) throw new Error('useAuth must be used within AuthProvider')
-  return context
-}
+  );
+};

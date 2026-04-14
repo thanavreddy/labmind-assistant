@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from '@/contexts/AuthContext'
+import { ThemeProvider } from '@/contexts/ThemeContext'
 import ProtectedRoute from '@/components/ProtectedRoute'
 
 // Public pages
@@ -11,16 +12,20 @@ import SelectRole from '@/pages/SelectRole'
 import Dashboard from './pages/Dashboard'
 
 // Protected pages (already built by Lovable)
-import StudentDashboard from '@/pages/StudentDashboard'
+import StudentCourses from '@/pages/student/StudentCourses'
+import CourseExperiments from '@/pages/student/CourseExperiments'
+import ExperimentDetails from '@/pages/student/ExperimentDetails'
 import ProfessorDashboard from '@/pages/ProfessorDashboard'
 import AIAssistant from '@/pages/AIAssistant'
 import ConceptCheck from '@/pages/ConceptCheck'
 import LabRecordEditor from '@/pages/LabRecordEditor'
+import ProfileDashboard from '@/pages/ProfileDashboard'
 
 export default function App() {
   return (
-    <AuthProvider>
-      <BrowserRouter>
+    <ThemeProvider>
+      <AuthProvider>
+        <BrowserRouter>
         <Routes>
 
           {/* Public routes */}
@@ -40,7 +45,17 @@ export default function App() {
           {/* Student only routes */}
           <Route path="/student-dashboard" element={
             <ProtectedRoute allowedRole="student">
-              <StudentDashboard />
+              <StudentCourses />
+            </ProtectedRoute>
+          } />
+          <Route path="/student/course/:courseId" element={
+            <ProtectedRoute allowedRole="student">
+              <CourseExperiments />
+            </ProtectedRoute>
+          } />
+          <Route path="/student/experiment/:experimentId" element={
+            <ProtectedRoute allowedRole="student">
+              <ExperimentDetails />
             </ProtectedRoute>
           } />
           <Route path="/assistant" element={
@@ -59,6 +74,13 @@ export default function App() {
             </ProtectedRoute>
           } />
 
+          {/* Profile — accessible to all authenticated users */}
+          <Route path="/profile" element={
+            <ProtectedRoute>
+              <ProfileDashboard />
+            </ProtectedRoute>
+          } />
+
           {/* Teacher only routes */}
           <Route path="/professor-dashboard" element={
             <ProtectedRoute allowedRole="professor">
@@ -70,7 +92,8 @@ export default function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
 
         </Routes>
-      </BrowserRouter>
-    </AuthProvider>
+        </BrowserRouter>
+      </AuthProvider>
+    </ThemeProvider>
   )
 }
