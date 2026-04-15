@@ -9,6 +9,8 @@ interface AuthContextType {
   loading: boolean;
   /** Call this after saving role in SelectRole to update context immediately. */
   setRoleDirectly: (role: "student" | "professor") => void;
+  signInWithEmail: (email: string, password: string) => Promise<{ error: string | null }>;
+  signInWithGoogle: () => Promise<{ error: string | null }>;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -17,6 +19,8 @@ const AuthContext = createContext<AuthContextType>({
   role: null,
   loading: true,
   setRoleDirectly: () => {},
+  signInWithEmail: async () => ({ error: null }),
+  signInWithGoogle: async () => ({ error: null }),
 });
 
 export const useAuth = () => useContext(AuthContext);
@@ -56,6 +60,22 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   /** Exposed so SelectRole can update role state instantly after saving. */
   const setRoleDirectly = useCallback((r: "student" | "professor") => {
     setRole(r);
+  }, []);
+
+  const signInWithEmail = useCallback(async (email: string, password: string): Promise<{ error: string | null }> => {
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    return { error: error ? error.message : null };
+  }, []);
+
+  const signInWithGoogle = useCallback(async (): Promise<{ error: string | null }> => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+        queryParams: { hd: "cbit.org.in" },
+      },
+    });
+    return { error: error ? error.message : null };
   }, []);
 
   useEffect(() => {
@@ -161,7 +181,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <AuthContext.Provider value={{ user, session, role, loading, setRoleDirectly }}>
+    <AuthContext.Provider value={{ user, session, role, loading, setRoleDirectly, signInWithEmail, signInWithGoogle }}>
       {children}
     </AuthContext.Provider>
   );
