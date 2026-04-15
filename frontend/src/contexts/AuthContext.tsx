@@ -1,6 +1,8 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
+import { createContext, useContext, useEffect, useState, useRef, ReactNode } from 'react'
 import { Session, User } from '@supabase/supabase-js'
 import { supabase, isAllowedEmail } from '@/lib/supabase'
+
+(window as any).supabase = supabase
 
 type Role = 'student' | 'professor' | null
 
@@ -23,65 +25,80 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [role, setRole] = useState<Role>(null)
   const [loading, setLoading] = useState(true)
 
+  const fetchIdRef = useRef(0)
+  const roleRef = useRef<Role>(null)
+
   const fetchRole = async (userId: string): Promise<Role> => {
-    const queryPromise: Promise<Role> = (async () => {
-      try {
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('id', userId)
-          .single()
-        if (error) {
-          console.error('Error fetching role:', error)
-          return null
-        }
-        return (data?.role ?? null) as Role
-      } catch (err) {
-        console.error('fetchRole threw:', err)
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', userId)
+        .single()
+      if (error) {
+        console.error('Error fetching role:', error)
         return null
       }
-    })()
-
-    // 4-second safety net — if Supabase hangs, resolve null instead of blocking forever
-    const timeout: Promise<Role> = new Promise((resolve) =>
-      setTimeout(() => {
-        console.warn('fetchRole timed out after 4s, resolving null')
-        resolve(null)
-      }, 4000)
-    )
-
-    return Promise.race([queryPromise, timeout])
+      return (data?.role ?? null) as Role
+    } catch (err) {
+      console.error('fetchRole threw:', err)
+      return null
+    }
   }
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      console.log('onAuthStateChange fired', _event, session?.user?.email)
-      
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('onAuthStateChange fired', event, session?.user?.email)
+
+      // Ignore duplicate SIGNED_IN events if we already have a valid role
+      if (event === 'SIGNED_IN' && roleRef.current !== null) {
+        console.log('Ignoring duplicate SIGNED_IN, role already set:', roleRef.current)
+        return
+      }
+
       setSession(session)
       setUser(session?.user ?? null)
 
-      try {
-        if (session?.user) {
-          if (!isAllowedEmail(session.user.email ?? '')) {
-            console.log('Email not allowed, signing out')
-            await supabase.auth.signOut()
-            setUser(null)
-            setSession(null)
-            setRole(null)
-          } else {
-            console.log('Fetching role for', session.user.id)
-            const userRole = await fetchRole(session.user.id)
-            console.log('Role fetched:', userRole)
-            setRole(userRole)
-          }
-        } else {
-          setRole(null)
-        }
-      } finally {
-        // Always runs — even if fetchRole hangs and times out
-        console.log('Setting loading to false')
+      if (!session?.user) {
+        roleRef.current = null
+        setRole(null)
         setLoading(false)
+        return
       }
+
+      if (!isAllowedEmail(session.user.email ?? '')) {
+        console.log('Email not allowed, signing out')
+        await supabase.auth.signOut()
+        setUser(null)
+        setSession(null)
+        roleRef.current = null
+        setRole(null)
+        setLoading(false)
+        return
+      }
+
+      // Stamp this fetch — stale results from previous fetches will be discarded
+      const fetchId = ++fetchIdRef.current
+      console.log('Fetching role for', session.user.id, '(fetch #' + fetchId + ')')
+
+      const userRole = await fetchRole(session.user.id)
+      console.log('Role fetched:', userRole, '(fetch #' + fetchId + ')')
+
+      // Discard result if a newer fetch has started
+      if (fetchId !== fetchIdRef.current) {
+        console.log('Discarding stale fetch #' + fetchId)
+        return
+      }
+
+      // Never overwrite a valid role with null
+      if (userRole !== null) {
+        roleRef.current = userRole
+        setRole(userRole)
+      } else if (roleRef.current === null) {
+        setRole(null)
+      }
+
+      setLoading(false)
     })
 
     return () => subscription.unsubscribe()
@@ -141,10 +158,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signOut = async () => {
     await supabase.auth.signOut()
+    roleRef.current = null
     setUser(null)
     setSession(null)
     setRole(null)
   }
+
+  console.log('render — loading:', loading, 'role:', role, 'user:', user?.email)
 
   return (
     <AuthContext.Provider value={{
