@@ -6,6 +6,7 @@ import {
   LayoutDashboard,
   Users,
   FlaskConical,
+  UserCircle,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
@@ -32,6 +33,11 @@ const mainItems = [
 const dashItems = [
   { title: "Student Dashboard", url: "/student-dashboard", icon: LayoutDashboard },
   { title: "Professor View", url: "/professor-dashboard", icon: Users },
+];
+
+/** Account-level links shown to all authenticated users. */
+const accountItems = [
+  { title: "My Profile", url: "/profile", icon: UserCircle },
 ];
 
 export function AppSidebar() {
@@ -117,6 +123,35 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {dashItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild>
+                    <NavLink
+                      to={item.url}
+                      className={`transition-all duration-200 ${
+                        isActive(item.url)
+                          ? "bg-primary/10 text-primary sapphire-glow"
+                          : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                      }`}
+                      activeClassName=""
+                    >
+                      <item.icon className="h-4 w-4 shrink-0" />
+                      {!collapsed && <span className="text-sm">{item.title}</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* Account group */}
+        <SidebarGroup>
+          <SidebarGroupLabel className="font-mono text-[10px] tracking-widest uppercase text-muted-foreground">
+            Account
+          </SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {accountItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <NavLink

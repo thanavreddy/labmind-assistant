@@ -1,52 +1,72 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
-import { useAuth } from '@/contexts/AuthContext'
+import { useAuth, writeCachedRole } from '@/contexts/AuthContext'
 import { Button } from '@/components/ui/button'
 
 type Role = 'student' | 'professor'
 
+const DEST = (r: Role) => r === 'student' ? '/student-dashboard' : '/professor-dashboard'
+
+/** Race a promise against a timeout. Rejects with an Error on timeout. */
+function withTimeout<T>(promise: Promise<T>, ms: number, message: string): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error(message)), ms)
+    ),
+  ])
+}
+
 export default function SelectRole() {
-  const { user, role: authRole, loading: authLoading } = useAuth()
+  const { user, role: authRole, loading: authLoading, setRoleDirectly } = useAuth()
   const navigate = useNavigate()
   const [role, setRole] = useState<Role>('student')
-  const [loading, setLoading] = useState(false)
+  const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // If auth context already has a role (e.g. INITIAL_SESSION resolved after SIGNED_IN),
-  // skip this page and go straight to the correct dashboard
+  // If user already has a role, skip this page
   useEffect(() => {
     if (!authLoading && authRole) {
-      navigate(
-        authRole === 'student' ? '/student-dashboard' : '/professor-dashboard',
-        { replace: true }
-      )
+      navigate(DEST(authRole), { replace: true })
     }
   }, [authRole, authLoading, navigate])
 
   const handleConfirm = async () => {
-    if (!user) return
-    setLoading(true)
+    if (!user || saving) return
+
+    setSaving(true)
     setError(null)
 
-    const { error } = await supabase
-      .from('profiles')
-      .upsert({
-        id: user.id,
-        email: user.email,          // NOT NULL in schema — must include
-        role,
-        full_name: user.user_metadata?.full_name ?? '',
-      })
+    try {
+      const { error: upsertErr } = await withTimeout(
+        supabase.from('profiles').upsert({
+          id: user.id,
+          email: user.email,       // NOT NULL in schema
+          full_name: user.user_metadata?.full_name ?? '',
+          role,
+        }) as unknown as Promise<{ error: Error | null }>,
+        12000,
+        'Request timed out. Please check your connection and try again.'
+      )
 
-    if (error) {
-      console.error('Profile upsert error:', error)
-      setError(error.message)
-      setLoading(false)
-      return
+      if (upsertErr) {
+        throw new Error(upsertErr.message ?? 'Failed to save role.')
+      }
+
+      // ── Update state & cache immediately — no round-trip needed ──────────
+      writeCachedRole(user.id, role)  // so next page loads instantly
+      setRoleDirectly(role)           // update AuthContext state right now
+
+      navigate(DEST(role), { replace: true })
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Something went wrong. Please try again.'
+      setError(msg)
+      console.error('[SelectRole] save error:', err)
+    } finally {
+      // Always re-enable the button — even if the request hung
+      setSaving(false)
     }
-
-    navigate(role === 'student' ? '/student-dashboard' : '/professor-dashboard')
-    setLoading(false)
   }
 
   return (
@@ -58,7 +78,7 @@ export default function SelectRole() {
         </p>
 
         {error && (
-          <div className="text-sm text-red-500 bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-3">
+          <div className="text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-lg px-4 py-3">
             {error}
           </div>
         )}
@@ -67,7 +87,8 @@ export default function SelectRole() {
           <button
             type="button"
             onClick={() => setRole('student')}
-            className={`p-6 rounded-lg border-2 text-left transition-all ${
+            disabled={saving}
+            className={`p-6 rounded-lg border-2 text-left transition-all disabled:opacity-50 ${
               role === 'student'
                 ? 'border-primary bg-primary/5'
                 : 'border-border hover:border-primary/40'
@@ -83,7 +104,8 @@ export default function SelectRole() {
           <button
             type="button"
             onClick={() => setRole('professor')}
-            className={`p-6 rounded-lg border-2 text-left transition-all ${
+            disabled={saving}
+            className={`p-6 rounded-lg border-2 text-left transition-all disabled:opacity-50 ${
               role === 'professor'
                 ? 'border-primary bg-primary/5'
                 : 'border-border hover:border-primary/40'
@@ -98,14 +120,21 @@ export default function SelectRole() {
         </div>
 
         <Button
+          id="select-role-confirm-btn"
           className="w-full"
           onClick={handleConfirm}
-          disabled={loading}
+          disabled={saving}
         >
-          {loading
-            ? 'Saving...'
-            : `Continue as ${role === 'student' ? 'Student' : 'Professor'}`}
+          {saving
+            ? 'Saving…'
+            : `Continue as ${role === 'student' ? 'Student' : 'Teacher'}`}
         </Button>
+
+        {saving && (
+          <p className="text-xs text-muted-foreground">
+            Connecting to server… this may take a moment.
+          </p>
+        )}
       </div>
     </div>
   )
