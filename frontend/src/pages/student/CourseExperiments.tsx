@@ -170,7 +170,6 @@ export default function CourseExperiments() {
   }
 
   const handleExpClick = (id: number) => {
-    if (usingDemo) return
     navigate(`/student/experiment/${id}`)
   }
 
@@ -324,7 +323,6 @@ export default function CourseExperiments() {
                     'glass-card p-5 w-full text-left group flex items-center gap-4',
                     'transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-md',
                     'opacity-0 animate-fade-up focus:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                    usingDemo && 'cursor-default',
                   )}
                   style={{ animationDelay: `${i * 0.05}s` }}
                 >
@@ -345,9 +343,7 @@ export default function CourseExperiments() {
                       )}
                     </div>
                   </div>
-                  {!usingDemo && (
-                    <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all duration-200 shrink-0" />
-                  )}
+                  <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all duration-200 shrink-0" />
                 </button>
               )
             })}

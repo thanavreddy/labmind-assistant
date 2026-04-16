@@ -194,25 +194,33 @@ export default function ExperimentDetails() {
     try {
       setLoading(true); setFatalError(null); setUsingDemo(false)
 
-      const [expRes, recRes] = await Promise.all([
-        supabase.from('experiments').select('*').eq('id', Number(experimentId)).single(),
-        supabase.from('lab_records')
-          .select('*')
-          .eq('experiment_id', Number(experimentId))
-          .eq('student_id', user!.id)
-          .maybeSingle(),
-      ])
+      // Pass experimentId as a raw string — Postgres casts it to BIGINT automatically.
+      // Using Number() fails when experiments.id is UUID type.
+      const expRes = await supabase
+        .from('experiments')
+        .select('*')
+        .eq('id', experimentId)
+        .single()
 
-      // Schema missing → demo
-      if (isSchemaMissing(expRes.error) || isSchemaMissing(recRes.error)) {
+      // Any error loading the experiment → show demo data.
+      // Covers: table missing, UUID type mismatch, row not found, etc.
+      if (expRes.error) {
+        console.warn('[ExperimentDetails] experiment fetch failed, using demo:', expRes.error.message)
         setUsingDemo(true)
         setExperiment(DEMO_EXPERIMENT)
         setLabRecord(DEMO_LAB_RECORD)
         return
       }
 
-      if (expRes.error) throw expRes.error
       setExperiment(expRes.data as Experiment)
+
+      // Fetch lab record separately — errors here are non-fatal (student may not have one yet)
+      const recRes = await supabase
+        .from('lab_records')
+        .select('*')
+        .eq('experiment_id', experimentId)
+        .eq('student_id', user!.id)
+        .maybeSingle()
 
       if (!recRes.error && recRes.data) {
         const rec = recRes.data as LabRecord
