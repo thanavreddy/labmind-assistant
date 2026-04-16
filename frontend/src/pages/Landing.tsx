@@ -1,9 +1,9 @@
-import { FlaskConical, ArrowRight, MessageSquare, ClipboardCheck, FileText, BarChart3, Code2, Users, Eye, Zap, Shield, Check, X, Minus, Plus, ChevronRight } from "lucide-react";
+import { FlaskConical, ArrowRight, MessageSquare, ClipboardCheck, FileText, BarChart3, Users, Eye, Zap, Check, X, Minus, Plus } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useScrollReveal } from "@/hooks/useScrollReveal";
 import { useCountUp } from "@/hooks/useCountUp";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 
 /* ─── Scroll-reveal wrapper ─── */
@@ -98,25 +98,36 @@ const faqs = [
 ];
 
 const Landing = () => {
+  useEffect(() => {
+    document.documentElement.style.scrollBehavior = "smooth";
+    return () => {
+      document.documentElement.style.scrollBehavior = "auto";
+    };
+  }, []);
+
   return (
-    <div className="min-h-screen bg-background overflow-x-hidden">
+    <div className="min-h-screen bg-background overflow-x-hidden py-16">
       {/* ═══ Navbar ═══ */}
-      <nav className="fixed top-0 inset-x-0 z-50 border-b border-border bg-background/80 backdrop-blur-xl">
+      <nav className="fixed top-0 inset-x-0 z-50 border-b border-border/50 bg-background/90 backdrop-blur-md">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2.5">
+          <Link to="/" className="flex items-center gap-2.5 hover:opacity-80 transition-opacity">
             <FlaskConical className="h-5 w-5 text-primary" />
-            <span className="text-lg font-bold tracking-tight">LabMind</span>
+            <span className="text-lg font-bold tracking-tight text-foreground">LabMind</span>
           </Link>
           <div className="hidden md:flex items-center gap-8">
-            <a href="#stats" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Achievements</a>
-            <a href="#benefits" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Benefits</a>
-            <a href="#compare" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Compare</a>
+            <a href="#features" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Features</a>
+            <a href="#stats" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Impact</a>
             <a href="#faq" className="text-sm text-muted-foreground hover:text-foreground transition-colors">FAQs</a>
           </div>
           <div className="flex items-center gap-3">
+            <Link to="/login">
+              <Button size="sm" variant="ghost" className="text-muted-foreground hover:text-foreground">
+                Login
+              </Button>
+            </Link>
             <Link to="/dashboard">
-              <Button size="sm" className="bg-primary text-primary-foreground hover:sapphire-glow transition-shadow">
-                Get Started <ChevronRight className="h-3.5 w-3.5" />
+              <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">
+                Get Started
               </Button>
             </Link>
           </div>
@@ -124,224 +135,231 @@ const Landing = () => {
       </nav>
 
       {/* ═══ Hero ═══ */}
-      <section className="pt-32 pb-20 max-w-6xl mx-auto px-6 text-center">
-        <Reveal>
-        <div className="p-6"></div>
-        </Reveal>
+      <section className="pt-32 pb-20 px-6 text-center relative overflow-hidden">
+        {/* Gradient background */}
+        <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent pointer-events-none" />
+        
+        <div className="max-w-4xl mx-auto relative">
+          <Reveal>
+            <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold tracking-tight leading-[1.08] text-foreground">
+              Lab Work,{" "}
+              <span className="text-primary">Simplified.</span>
+            </h1>
+          </Reveal>
 
-        <div className="max-w-4xl mx-auto">
-          {["A Guided AI Lab", "Companion for Students"].map((line, i) => (
-            <Reveal key={i} delay={i * 120}>
-              <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold tracking-tight leading-[1.08]">
-                {line.split(" ").map((word, j) => (
-                  <span
-                    key={j}
-                    className={cn("inline-block mr-[0.3em] opacity-0 animate-fade-up", word === "AI" && "text-primary")}
-                    style={{ animationDelay: `${(i * 4 + j) * 80 + 200}ms`, animationFillMode: "forwards" }}
-                  >
-                    {word}
-                  </span>
-                ))}
-              </h1>
-            </Reveal>
-          ))}
+          <Reveal delay={120}>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto mt-8 leading-relaxed">
+              Manage experiments, track progress, and streamline lab workflows — all in one place. 
+              Built for students and faculty to work smarter.
+            </p>
+          </Reveal>
+
+          <Reveal delay={240}>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-12">
+              <Link to="/dashboard">
+                <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 transition-colors gap-2">
+                  Get Started <ArrowRight className="h-4 w-4" />
+                </Button>
+              </Link>
+              <Link to="/login">
+                <Button size="lg" variant="outline" className="border-border hover:bg-muted hover:border-border/50 transition-all">
+                  Login
+                </Button>
+              </Link>
+            </div>
+          </Reveal>
+
+          <Reveal delay={360}>
+            <div className="flex flex-wrap items-center justify-center gap-3 mt-12">
+              {[
+                { icon: Zap, label: "AI Guidance" },
+                { icon: ClipboardCheck, label: "Experiment Tracking" },
+                { icon: Users, label: "Faculty Tools" },
+              ].map((pill) => (
+                <div key={pill.label} className="flex items-center gap-2 px-4 py-2 rounded-full border border-border/50 bg-muted/20 text-sm text-muted-foreground hover:border-border/80 transition-all">
+                  <pill.icon className="h-3.5 w-3.5 text-primary" />
+                  {pill.label}
+                </div>
+              ))}
+            </div>
+          </Reveal>
         </div>
-
-        <Reveal delay={500}>
-          <p className="text-lg text-muted-foreground max-w-xl mx-auto mt-8 leading-relaxed">
-            Complete lab experiments with AI guidance. Learn concepts, verify understanding, and generate structured lab records — all in one intelligent workflow.
-          </p>
-        </Reveal>
-
-        <Reveal delay={600}>
-          <div className="flex items-center justify-center gap-4 mt-10">
-            <Link to="/assistant">
-              <Button size="lg" className="bg-primary text-primary-foreground hover:sapphire-glow transition-shadow gap-2">
-                Start Lab Session <ArrowRight className="h-4 w-4" />
-              </Button>
-            </Link>
-            <Link to="/dashboard">
-              <Button size="lg" variant="outline" className="border-border text-foreground hover:bg-muted">
-                View Dashboard
-              </Button>
-            </Link>
-          </div>
-        </Reveal>
-
-        <Reveal delay={750}>
-          <div className="flex flex-wrap items-center justify-center gap-3 mt-10">
-            {[
-              { icon: Zap, label: "Instant AI Help" },
-              { icon: FileText, label: "Smart Record Editor" },
-              { icon: Users, label: "Professor Dashboard" },
-            ].map((pill) => (
-              <div key={pill.label} className="flex items-center gap-2 px-4 py-2 rounded-full border border-border bg-card text-sm text-muted-foreground">
-                <pill.icon className="h-3.5 w-3.5 text-primary" />
-                {pill.label}
-              </div>
-            ))}
-          </div>
-        </Reveal>
       </section>
 
       {/* ═══ Marquee ═══ */}
-      <div className="border-y border-border bg-card py-4 overflow-hidden">
+      <div className="border-y border-border/50 bg-muted/10 py-6 overflow-hidden">
         <div className="flex animate-marquee whitespace-nowrap">
           {[...marqueeItems, ...marqueeItems].map((item, i) => (
-            <span key={i} className="flex items-center gap-4 mx-4 text-sm font-medium text-muted-foreground">
+            <span key={i} className="flex items-center gap-4 mx-6 text-sm font-medium text-muted-foreground">
               {item}
-              <span className="text-primary">◆</span>
+              <span className="text-primary/50">◆</span>
             </span>
           ))}
         </div>
       </div>
 
       {/* ═══ Stats ═══ */}
-      <section id="stats" className="max-w-6xl mx-auto px-6 py-24">
-        <Reveal>
-          <div className="border border-border rounded-lg overflow-hidden grid md:grid-cols-3">
-            <StatCard value={500} suffix="+" scrollTexts={["Data Structures", "Operating Systems", "Database Systems", "Algorithms"]} desc="Students guided through lab experiments with AI assistance" />
-            <StatCard value={3} suffix="-Step" scrollTexts={["Learn", "Verify", "Record", "Complete"]} desc="Streamlined workflow from concept to completion" />
-            <StatCard value={48} suffix="hr" scrollTexts={["Fast", "Efficient", "Structured", "Complete"]} desc="Average lab completion time with LabMind guidance" />
-          </div>
-        </Reveal>
+      <section id="stats" className="py-16 md:py-24 px-6 bg-gradient-to-b from-transparent via-muted/5 to-transparent">
+        <div className="max-w-6xl mx-auto">
+          <Reveal>
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-center mb-4 text-foreground">Impact & Stats</h2>
+            <p className="text-muted-foreground text-center max-w-lg mx-auto mb-12">See how LabMind is transforming the lab experience.</p>
+          </Reveal>
+          <Reveal>
+            <div className="border border-border/50 rounded-lg overflow-hidden grid md:grid-cols-3 bg-muted/5 backdrop-blur-sm">
+              <StatCard value={500} suffix="+" scrollTexts={["Students", "Guided", "Experiments", "Completed"]} desc="Students completing labs with LabMind" />
+              <StatCard value={3} suffix="-Step" scrollTexts={["Learn", "Verify", "Record"]} desc="Clear workflow from start to finish" />
+              <StatCard value={48} suffix="hr" scrollTexts={["Average", "Lab Time", "Streamlined"]} desc="Typical lab completion time" />
+            </div>
+          </Reveal>
+        </div>
       </section>
 
       {/* ═══ Benefits Bento ═══ */}
-      <section id="benefits" className="max-w-6xl mx-auto px-6 pb-24">
-        <Reveal>
-          <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-center mb-4">Benefits of LabMind</h2>
-          <p className="text-muted-foreground text-center max-w-lg mx-auto mb-12">Why settle for less? Here's why LabMind is the game-changer your lab work needs.</p>
-        </Reveal>
-        <div className="grid md:grid-cols-3 gap-4">
-          {benefits.map((b, i) => (
-            <Reveal key={b.title} delay={i * 80} className={b.span === 2 ? "md:col-span-2" : ""}>
-              <div className="h-full p-6 rounded-lg border border-border bg-card hover:-translate-y-1 hover:border-primary/50 transition-all duration-300 group">
-                <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
-                  <b.icon className="h-5 w-5 text-primary" />
+      <section id="features" className="py-16 md:py-24 px-6">
+        <div className="max-w-6xl mx-auto">
+          <Reveal>
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-center mb-4 text-foreground">Track Your Lab Progress</h2>
+            <p className="text-muted-foreground text-center max-w-lg mx-auto mb-12">Everything you need to manage experiments and stay on track.</p>
+          </Reveal>
+          <div className="grid md:grid-cols-3 gap-4">
+            {benefits.map((b, i) => (
+              <Reveal key={b.title} delay={i * 80} className={b.span === 2 ? "md:col-span-2" : ""}>
+                <div className="h-full p-6 rounded-lg border border-border/50 bg-muted/5 hover:bg-muted/10 hover:border-border/80 hover:scale-[1.02] transition-all duration-300 group backdrop-blur-sm">
+                  <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
+                    <b.icon className="h-5 w-5 text-primary" />
+                  </div>
+                  <h3 className="font-semibold text-foreground mb-2">{b.title}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{b.desc}</p>
                 </div>
-                <h3 className="font-semibold text-foreground mb-2">{b.title}</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">{b.desc}</p>
-              </div>
-            </Reveal>
-          ))}
+              </Reveal>
+            ))}
+          </div>
         </div>
       </section>
 
       {/* ═══ How It Works ═══ */}
-      <section className="max-w-6xl mx-auto px-6 pb-24">
-        <Reveal>
-          <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-center mb-4">How Simple It Is</h2>
-          <p className="text-muted-foreground text-center max-w-lg mx-auto mb-12">Three steps. That's all it takes to go from confused to confident.</p>
-        </Reveal>
-        <Reveal>
-          <div className="border border-border rounded-lg overflow-hidden grid md:grid-cols-3">
-            {[
-              { step: "01", title: "Learn with AI", desc: "Ask your AI assistant any concept question. Get clear, structured explanations with code examples." },
-              { step: "02", title: "Prove You Understand", desc: "Complete a short comprehension quiz. No pasting allowed — demonstrate genuine understanding." },
-              { step: "03", title: "Draft Your Record", desc: "Generate a structured lab record with all sections: Aim, Theory, Algorithm, Code, Output, Conclusion." },
-            ].map((s, i) => (
-              <div key={s.step} className={cn("p-8 md:p-10", i < 2 && "border-r border-border")}>
-                <span className="font-mono text-xs text-primary tracking-widest">Step {s.step}</span>
-                <h3 className="text-xl font-semibold mt-3 mb-3">{s.title}</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">{s.desc}</p>
-              </div>
-            ))}
-          </div>
-        </Reveal>
+      <section className="py-16 md:py-24 px-6 bg-gradient-to-b from-muted/5 to-transparent">
+        <div className="max-w-6xl mx-auto">
+          <Reveal>
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-center mb-4 text-foreground">Guided Experiments</h2>
+            <p className="text-muted-foreground text-center max-w-lg mx-auto mb-12">Three simple steps to complete your lab work with confidence.</p>
+          </Reveal>
+          <Reveal>
+            <div className="border border-border/50 rounded-lg overflow-hidden grid md:grid-cols-3 bg-muted/5 backdrop-blur-sm">
+              {[
+                { step: "01", title: "Learn with AI", desc: "Get clear explanations with code examples tailored to your experiment." },
+                { step: "02", title: "Verify Understanding", desc: "Complete a quiz to demonstrate genuine understanding before proceeding." },
+                { step: "03", title: "Draft Your Record", desc: "Generate a structured lab record with all required sections pre-formatted." },
+              ].map((s, i) => (
+                <div key={s.step} className={cn("p-8 md:p-10", i < 2 && "border-r border-border/50")}>
+                  <span className="font-mono text-xs text-primary tracking-widest uppercase">Step {s.step}</span>
+                  <h3 className="text-xl font-semibold mt-3 mb-3 text-foreground">{s.title}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{s.desc}</p>
+                </div>
+              ))}
+            </div>
+          </Reveal>
+        </div>
       </section>
 
       {/* ═══ Comparison Table ═══ */}
-      <section id="compare" className="max-w-6xl mx-auto px-6 pb-24">
-        <Reveal>
-          <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-center mb-4">Why Choose LabMind?</h2>
-          <p className="text-muted-foreground text-center max-w-lg mx-auto mb-12">See how LabMind stacks up against traditional methods.</p>
-        </Reveal>
-        <Reveal>
-          <div className="border border-border rounded-lg overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-border">
-                  <th className="text-left p-4 font-medium text-muted-foreground" />
-                  <th className="p-4 font-semibold text-primary bg-primary/5">LabMind</th>
-                  <th className="p-4 font-medium text-muted-foreground">Traditional Lab</th>
-                  <th className="p-4 font-medium text-muted-foreground">No Tool</th>
-                </tr>
-              </thead>
-              <tbody>
-                {compRows.map((row) => (
-                  <tr key={row.label} className="border-b border-border last:border-b-0">
-                    <td className="p-4 font-medium text-foreground">{row.label}</td>
-                    {[row.labmind, row.traditional, row.none].map((val, i) => (
-                      <td key={i} className={cn("p-4 text-center", i === 0 && "bg-primary/5")}>
-                        {typeof val === "boolean" ? (
-                          val ? <Check className="h-4 w-4 text-primary mx-auto" /> : <X className="h-4 w-4 text-muted-foreground/40 mx-auto" />
-                        ) : (
-                          <span className={i === 0 ? "text-primary font-semibold" : "text-muted-foreground"}>{val}</span>
-                        )}
-                      </td>
-                    ))}
+      <section className="py-16 md:py-24 px-6">
+        <div className="max-w-6xl mx-auto">
+          <Reveal>
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-center mb-4 text-foreground">Faculty Insights & Evaluation</h2>
+            <p className="text-muted-foreground text-center max-w-lg mx-auto mb-12">Tools designed to help faculty manage and evaluate student work.</p>
+          </Reveal>
+          <Reveal>
+            <div className="border border-border/50 rounded-lg overflow-x-auto bg-muted/5 backdrop-blur-sm">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-border/50 bg-muted/10">
+                    <th className="text-left p-4 font-medium text-muted-foreground" />
+                    <th className="p-4 font-semibold text-primary">LabMind</th>
+                    <th className="p-4 font-medium text-muted-foreground">Traditional Lab</th>
+                    <th className="p-4 font-medium text-muted-foreground">Manual Tracking</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </Reveal>
+                </thead>
+                <tbody>
+                  {compRows.map((row) => (
+                    <tr key={row.label} className="border-b border-border/50 last:border-b-0 hover:bg-muted/10 transition-colors">
+                      <td className="p-4 font-medium text-foreground">{row.label}</td>
+                      {[row.labmind, row.traditional, row.none].map((val, i) => (
+                        <td key={i} className={cn("p-4 text-center", i === 0 && "bg-primary/10")}>
+                          {typeof val === "boolean" ? (
+                            val ? <Check className="h-4 w-4 text-primary mx-auto" /> : <X className="h-4 w-4 text-muted-foreground/40 mx-auto" />
+                          ) : (
+                            <span className={i === 0 ? "text-primary font-semibold" : "text-muted-foreground"}>{val}</span>
+                          )}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </Reveal>
+        </div>
       </section>
 
       {/* ═══ FAQ ═══ */}
-      <section id="faq" className="max-w-3xl mx-auto px-6 pb-24">
-        <Reveal>
-          <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-center mb-4">Frequently Asked Questions</h2>
-          <p className="text-muted-foreground text-center max-w-md mx-auto mb-12">Got questions? We've got answers.</p>
-        </Reveal>
-        <Reveal>
-          <div className="border border-border rounded-lg px-6">
-            {faqs.map((faq) => (
-              <FaqItem key={faq.q} q={faq.q} a={faq.a} />
-            ))}
-          </div>
-        </Reveal>
+      <section id="faq" className="py-16 md:py-24 px-6 bg-gradient-to-b from-transparent via-muted/5 to-transparent">
+        <div className="max-w-3xl mx-auto">
+          <Reveal>
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-center mb-4 text-foreground">Common Questions</h2>
+            <p className="text-muted-foreground text-center max-w-md mx-auto mb-12">Find answers to questions about LabMind.</p>
+          </Reveal>
+          <Reveal>
+            <div className="border border-border/50 rounded-lg px-6 bg-muted/5 backdrop-blur-sm">
+              {faqs.map((faq) => (
+                <FaqItem key={faq.q} q={faq.q} a={faq.a} />
+              ))}
+            </div>
+          </Reveal>
+        </div>
       </section>
 
       {/* ═══ CTA Banner ═══ */}
-      <section className="max-w-6xl mx-auto px-6 pb-24">
-        <Reveal>
-          <div className="rounded-2xl border border-border bg-card p-12 md:p-16 text-center">
-            <h2 className="text-3xl md:text-5xl font-bold tracking-tight leading-tight mb-6">
-              If you made it here,<br />your lab record is <span className="text-primary">overdue.</span>
-            </h2>
-            <p className="text-muted-foreground max-w-md mx-auto mb-10">
-              Stop procrastinating. Start your lab session now and have your record ready before the deadline.
-            </p>
-            <div className="flex items-center justify-center gap-4">
-              <Link to="/assistant">
-                <Button size="lg" className="bg-primary text-primary-foreground hover:sapphire-glow transition-shadow gap-2">
-                  Start Now <ArrowRight className="h-4 w-4" />
-                </Button>
-              </Link>
-              <Link to="/dashboard">
-                <Button size="lg" variant="outline" className="border-border text-foreground hover:bg-muted">
-                  Guest Access
-                </Button>
-              </Link>
+      <section className="py-16 md:py-24 px-6">
+        <div className="max-w-6xl mx-auto">
+          <Reveal>
+            <div className="rounded-2xl border border-border/50 bg-gradient-to-b from-muted/10 to-muted/5 backdrop-blur-sm p-12 md:p-16 text-center">
+              <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground mb-4">
+                Ready to simplify your lab workflow?
+              </h2>
+              <p className="text-muted-foreground max-w-md mx-auto mb-10 text-lg">
+                Get started today. Complete your next lab with confidence and clarity.
+              </p>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                <Link to="/dashboard">
+                  <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 transition-colors gap-2">
+                    Get Started <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </Link>
+                <Link to="/login">
+                  <Button size="lg" variant="outline" className="border-border/50 hover:bg-muted hover:border-border transition-all">
+                    Login
+                  </Button>
+                </Link>
+              </div>
             </div>
-          </div>
-        </Reveal>
+          </Reveal>
+        </div>
       </section>
-
+      
       {/* ═══ Footer ═══ */}
-      <footer className="border-t border-border">
-        <div className="max-w-6xl mx-auto px-6 py-6 flex flex-col md:flex-row items-center justify-between gap-4">
+      <footer className="border-t border-border/50 bg-muted/5">
+        <div className="max-w-6xl mx-auto px-6 py-8 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <FlaskConical className="h-4 w-4 text-primary" />
-            <span className="text-sm font-semibold">LabMind</span>
+            <span className="text-sm font-semibold text-foreground">LabMind</span>
           </div>
-          <p className="text-xs text-muted-foreground">© 2026 LabMind. All rights reserved.</p>
+          <p className="text-xs text-muted-foreground">© 2026 LabMind. Streamline your lab work.</p>
           <div className="flex items-center gap-6">
-            <Link to="/assistant" className="text-xs text-muted-foreground hover:text-foreground transition-colors">AI Assistant</Link>
             <Link to="/dashboard" className="text-xs text-muted-foreground hover:text-foreground transition-colors">Dashboard</Link>
-            <Link to="/professor" className="text-xs text-muted-foreground hover:text-foreground transition-colors">Professor</Link>
+            <Link to="/profile" className="text-xs text-muted-foreground hover:text-foreground transition-colors">Profile</Link>
+            <a href="#faq" className="text-xs text-muted-foreground hover:text-foreground transition-colors">Support</a>
           </div>
         </div>
       </footer>

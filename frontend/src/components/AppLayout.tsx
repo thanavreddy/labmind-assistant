@@ -7,7 +7,7 @@
  */
 
 import { ReactNode, useState } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate, Link } from "react-router-dom";
 import {
   Home,
   FlaskConical,
@@ -47,14 +47,17 @@ const studentNav: NavItem[] = [
   { label: "Concept Check", href: "/concept-check",     icon: ClipboardCheck },
 ];
 
-const professorNav: NavItem[] = [
-  { label: "Home",            href: "/professor-dashboard", icon: Home },
-  { label: "Lab Management",  href: "/lab-record",          icon: BookOpen,   expandable: true },
-  { label: "Student Reports", href: "/professor-dashboard", icon: Users,      expandable: true },
+const facultyNav: NavItem[] = [
+  { label: "Dashboard",    href: "/faculty-dashboard",    icon: LayoutDashboard },
+  { label: "Courses",      href: "/faculty-courses",      icon: BookOpen,        expandable: true },
+  { label: "Experiments",  href: "/faculty-experiments",  icon: FlaskConical,    expandable: true },
+  { label: "Students",     href: "/faculty-students",     icon: Users },
+  { label: "Submissions",  href: "/faculty-submissions",  icon: ClipboardCheck },
 ];
 
 const sharedNav: NavItem[] = [
-  { label: "My Profile", href: "/profile", icon: UserCircle },
+  { label: "AI Assistant", href: "/assistant",  icon: MessageSquare },
+  { label: "My Profile",   href: "/profile",    icon: UserCircle },
 ];
 
 // ─── Single nav link ─────────────────────────────────────────────────────────
@@ -104,7 +107,11 @@ function Sidebar({ collapsed, onClose }: { collapsed: boolean; onClose?: () => v
   const { user, role } = useAuth();
   const navigate = useNavigate();
 
-  const navItems = role === "professor" ? professorNav : studentNav;
+  const dashboardLink = user 
+    ? (role === "faculty" ? "/faculty-dashboard" : "/student-dashboard")
+    : "/";
+
+  const navItems = role === "faculty" ? facultyNav : studentNav;
 
   const displayName =
     user?.user_metadata?.full_name as string | undefined ??
@@ -132,14 +139,12 @@ function Sidebar({ collapsed, onClose }: { collapsed: boolean; onClose?: () => v
     >
       {/* ── Brand ──────────────────────────────────────────────────────── */}
       <div className={cn("flex items-center gap-2.5 px-4 py-5 shrink-0", collapsed && "justify-center px-0")}>
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary">
-          <FlaskConical className="h-4 w-4 text-primary-foreground" />
-        </div>
-        {!collapsed && (
-          <span className="text-[17px] font-bold tracking-tight text-foreground">
-            LabMind
-          </span>
-        )}
+        <Link to={dashboardLink} className={cn("flex items-center gap-2.5 hover:opacity-80 transition-opacity", collapsed && "justify-center")}>
+          <FlaskConical className="h-5 w-5 text-primary" />
+          {!collapsed && (
+            <span className="text-lg font-bold tracking-tight text-foreground">LabMind</span>
+          )}
+        </Link>
       </div>
 
       {/* ── Main nav ───────────────────────────────────────────────────── */}
@@ -152,7 +157,7 @@ function Sidebar({ collapsed, onClose }: { collapsed: boolean; onClose?: () => v
         {/* Divider */}
         <div className="my-3 mx-2 h-px bg-border" />
 
-        {/* Shared nav (profile) */}
+        {/* Shared nav (profile and assistant) */}
         {sharedNav.map((item) => (
           <SideNavItem key={item.href} item={item} collapsed={collapsed} />
         ))}
@@ -174,7 +179,7 @@ function Sidebar({ collapsed, onClose }: { collapsed: boolean; onClose?: () => v
             <span
               className={cn(
                 "absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-card",
-                role === "professor" ? "bg-amber-400" : "bg-emerald-400"
+                role === "faculty" ? "bg-amber-400" : "bg-emerald-400"
               )}
             />
           </div>
@@ -185,7 +190,7 @@ function Sidebar({ collapsed, onClose }: { collapsed: boolean; onClose?: () => v
                 {displayName}
               </p>
               <p className="truncate text-[11px] text-muted-foreground leading-tight">
-                {user?.email}
+                {role === "faculty" ? "Faculty" : "Student"}
               </p>
             </div>
           )}
