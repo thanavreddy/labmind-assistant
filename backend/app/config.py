@@ -23,9 +23,9 @@ class Settings(BaseSettings):
     database_url: str = ""
     
     # Security
-    secret_key: str
-    algorithm: str = "HS256"
-    access_token_expire_minutes: int = 30
+    # secret_key: str
+    # algorithm: str = "HS256"
+    # access_token_expire_minutes: int = 30
     
     # OpenAI Configuration
     openai_api_key: str = ""  # Optional - AI features disabled if not provided

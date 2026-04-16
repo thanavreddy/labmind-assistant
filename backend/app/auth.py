@@ -1,53 +1,70 @@
-"""Authentication utilities and middleware."""
+"""Authentication utilities and middleware (Supabase ES256 + JWKS)."""
 
-from datetime import datetime, timedelta
-from typing import Optional
-from jose import JWTError, jwt
 from fastapi import Depends, HTTPException, status
-from fastapi.security import HTTPBearer, HTTPAuthCredentials
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from jose import jwt
+import requests
 from app.config import get_settings
 
+# Load settings
 settings = get_settings()
+
+# Bearer auth scheme
 security = HTTPBearer()
 
+# Supabase JWKS endpoint (correct)
+JWKS_URL = f"{settings.supabase_url}/auth/v1/.well-known/jwks.json"
 
-def verify_token(credentials: HTTPAuthCredentials = Depends(security)) -> dict:
+
+def get_current_user(
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+):
     """
-    Verify JWT token from request header.
-    
-    Args:
-        credentials: HTTP Bearer credentials from request
-        
-    Returns:
-        Decoded token payload
-        
-    Raises:
-        HTTPException: If token is invalid or expired
+    Validate Supabase JWT using JWKS (ES256).
     """
-    token = credentials.credentials
     try:
-        payload = jwt.decode(token, settings.secret_key, algorithms=[settings.algorithm])
-        user_id: str = payload.get("sub")
-        if user_id is None:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid authentication credentials",
-            )
+        token = credentials.credentials
+
+        # Fetch JWKS (public endpoint — no headers needed)
+        response = requests.get(JWKS_URL)
+        jwks = response.json()
+
+        # Extract key ID from token
+        headers = jwt.get_unverified_header(token)
+        kid = headers.get("kid")
+
+        if not kid:
+            raise Exception("Missing 'kid' in token header")
+
+        # Find matching key
+        key = next((k for k in jwks["keys"] if k["kid"] == kid), None)
+
+        if not key:
+            raise Exception("Matching JWKS key not found")
+
+        # Decode token
+        payload = jwt.decode(
+            token,
+            key,
+            algorithms=["ES256"],
+            options={"verify_aud": False}
+        )
+
+        if "sub" not in payload:
+            raise Exception("Invalid token payload")
+
         return payload
-    except JWTError:
+
+    except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid authentication credentials",
+            detail="Invalid authentication credentials"
         )
 
 
-def get_current_user(token: dict = Depends(verify_token)) -> dict:
-    """Get current user from token."""
-    return token
-
-
 class TokenData:
-    """Token payload data."""
+    """Optional helper class."""
+
     def __init__(self, user_id: str, email: str, role: str):
         self.user_id = user_id
         self.email = email
