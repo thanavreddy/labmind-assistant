@@ -11,12 +11,6 @@ interface AuthContextType {
   session: Session | null;
   role: Role | null;
   loading: boolean;
-<<<<<<< Updated upstream
-  /** Call this after saving role in SelectRole to update context immediately. */
-  setRoleDirectly: (role: "student" | "professor") => void;
-  signInWithEmail: (email: string, password: string) => Promise<{ error: string | null }>;
-  signInWithGoogle: () => Promise<{ error: string | null }>;
-=======
   signUpWithEmail: (
     email: string,
     password: string,
@@ -30,7 +24,6 @@ interface AuthContextType {
   signInWithGoogle: () => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
   setRoleDirectly: (role: Role) => void;
->>>>>>> Stashed changes
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -38,41 +31,15 @@ const AuthContext = createContext<AuthContextType>({
   session: null,
   role: null,
   loading: true,
-<<<<<<< Updated upstream
-  setRoleDirectly: () => {},
-  signInWithEmail: async () => ({ error: null }),
-  signInWithGoogle: async () => ({ error: null }),
-=======
   signUpWithEmail: async () => ({ error: null }),
   signInWithEmail: async () => ({ error: null }),
   signInWithGoogle: async () => ({ error: null }),
   signOut: async () => {},
   setRoleDirectly: () => {},
->>>>>>> Stashed changes
 });
 
 export const useAuth = () => useContext(AuthContext);
 
-<<<<<<< Updated upstream
-// ─── Role cache ───────────────────────────────────────────────────────────────
-const CACHE_KEY = (uid: string) => `lm_role_${uid}`;
-
-const readCachedRole = (uid: string): "student" | "professor" | null => {
-  try {
-    const v = localStorage.getItem(CACHE_KEY(uid));
-    return v === "student" || v === "professor" ? v : null;
-  } catch { return null; }
-};
-
-export const writeCachedRole = (uid: string, role: "student" | "professor" | null) => {
-  try {
-    if (role) localStorage.setItem(CACHE_KEY(uid), role);
-    else localStorage.removeItem(CACHE_KEY(uid));
-  } catch { /* ignore */ }
-};
-
-const clearRoleCache = () => {
-=======
 // ─── Role Cache ──────────────────────────────────────────────────────────────
 // ─── Role Cache ──────────────────────────────────────────────────────────────
 
@@ -105,47 +72,19 @@ export const writeCachedRole = (
 };
 
 export const clearRoleCache = () => {
->>>>>>> Stashed changes
   try {
     Object.keys(localStorage)
       .filter((k) => k.startsWith("lm_role_"))
       .forEach((k) => localStorage.removeItem(k));
-<<<<<<< Updated upstream
-  } catch { /* ignore */ }
-};
-// ─────────────────────────────────────────────────────────────────────────────
-=======
   } catch {
     // Ignore storage errors
   }
 };
 // ─── Provider ─────────────────────────────────────────────────────────────────
->>>>>>> Stashed changes
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
-<<<<<<< Updated upstream
-  const [role, setRole] = useState<"student" | "professor" | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  /** Exposed so SelectRole can update role state instantly after saving. */
-  const setRoleDirectly = useCallback((r: "student" | "professor") => {
-    setRole(r);
-  }, []);
-
-  const signInWithEmail = useCallback(async (email: string, password: string): Promise<{ error: string | null }> => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    return { error: error ? error.message : null };
-  }, []);
-
-  const signInWithGoogle = useCallback(async (): Promise<{ error: string | null }> => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-        queryParams: { hd: "cbit.org.in" },
-=======
   const [role, setRole] = useState<Role | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -190,7 +129,6 @@ const signUpWithEmail = async (
           name,
           role,
         },
->>>>>>> Stashed changes
       },
     });
 
@@ -284,99 +222,6 @@ const signUpWithEmail = async (
         setLoading(false);
         return;
       }
-<<<<<<< Updated upstream
-    };
-
-    /**
-     * Fetches (or creates) the profile row entirely in the background.
-     * NEVER awaited in the critical init path — loading is not gated on this.
-     */
-    const syncProfileInBackground = (u: User) => {
-      Promise.resolve(
-        supabase
-          .from("profiles")
-          .select("role")
-          .eq("id", u.id)
-          .maybeSingle()
-      )
-        .then(({ data, error }) => {
-          if (!isMounted) return;
-          if (error) { console.error("[Auth] profile fetch error:", error); return; }
-
-          if (!data) {
-            // Create row for first-time user
-            Promise.resolve(
-              supabase.from("profiles").insert({
-                id: u.id,
-                email: u.email,
-                full_name: u.user_metadata?.full_name ?? "",
-                role: null,
-              })
-            ).then(({ error: ie }) => {
-              if (ie && ie.code !== "23505") console.error("[Auth] insert error:", ie);
-            });
-            writeCachedRole(u.id, null);
-            if (isMounted) setRole(null);
-          } else {
-            const fetched = data.role as "student" | "professor" | null;
-            writeCachedRole(u.id, fetched);
-            if (isMounted) setRole(fetched);
-          }
-        })
-        .catch((err) => console.error("[Auth] unexpected profile error:", err));
-    };
-
-    // ── Hard safety net: 6 s cap ──────────────────────────────────────────────
-    const safetyTimer = setTimeout(() => {
-      console.warn("[Auth] timeout — forcing loading=false");
-      resolveLoading();
-    }, 6000);
-
-    // ── Single source of truth ────────────────────────────────────────────────
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, s) => {
-      if (!isMounted) return;
-      console.log("[Auth] event:", event);
-
-      if (event === "SIGNED_OUT") {
-        clearRoleCache();
-        setSession(null);
-        setUser(null);
-        setRole(null);
-        resolveLoading();
-        return;
-      }
-
-      // Handle INITIAL_SESSION, SIGNED_IN, TOKEN_REFRESHED, USER_UPDATED
-      setSession(s);
-      setUser(s?.user ?? null);
-
-      if (!s?.user) {
-        setRole(null);
-        resolveLoading(); // no user → done immediately
-        return;
-      }
-
-      // ── Set role from cache instantly, THEN sync in background ────────────
-      const cached = readCachedRole(s.user.id);
-      if (cached !== null) {
-        setRole(cached);
-      }
-      // loading ALWAYS resolves here — never gated on a network call
-      resolveLoading();
-
-      // Sync profile in background on session events (verifies / creates row)
-      if (event === "INITIAL_SESSION" || event === "SIGNED_IN") {
-        syncProfileInBackground(s.user);
-      }
-    });
-
-    return () => {
-      isMounted = false;
-      clearTimeout(safetyTimer);
-      subscription.unsubscribe();
-    };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-=======
 
       // Apply cached role immediately
       const cached = readCachedRole(currentUser.id);
@@ -408,7 +253,6 @@ const signUpWithEmail = async (
       subscription.unsubscribe();
     };
   }, [fetchUserRole]);
->>>>>>> Stashed changes
 
   return (
     <AuthContext.Provider
