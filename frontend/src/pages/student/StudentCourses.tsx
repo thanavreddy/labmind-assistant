@@ -313,7 +313,6 @@ export default function StudentCourses() {
 
   // Demo card click → no-op with a toast hint (real click needs live data)
   const handleCardClick = (id: number) => {
-    if (usingDemo) return          // cards are visual-only in demo mode
     navigate(`/student/course/${id}`)
   }
 

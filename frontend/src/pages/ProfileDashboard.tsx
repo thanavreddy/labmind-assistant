@@ -49,10 +49,10 @@ interface Profile {
   id: string;
   email: string;
   full_name: string | null;
-  role: "student" | "professor" | null;
   department: string | null;
   created_at: string;
   updated_at: string;
+  role: "student" | "faculty";
 }
 
 /** Editable fields exposed in the form. */
@@ -105,14 +105,15 @@ function ProfileSkeleton() {
 // ---------------------------------------------------------------------------
 
 function RoleBadge({ role }: { role: Profile["role"] }) {
-  if (role === "professor") {
+  if (role === "faculty") {
     return (
       <Badge className="gap-1.5 bg-amber-500/15 text-amber-500 border border-amber-500/30 hover:bg-amber-500/20">
         <BookOpen className="h-3 w-3" />
-        Professor
+        Faculty
       </Badge>
     );
   }
+
   if (role === "student") {
     return (
       <Badge className="gap-1.5 bg-primary/15 text-primary border border-primary/30 hover:bg-primary/20">
@@ -121,6 +122,7 @@ function RoleBadge({ role }: { role: Profile["role"] }) {
       </Badge>
     );
   }
+
   return (
     <Badge variant="outline" className="gap-1.5 text-muted-foreground">
       <ShieldCheck className="h-3 w-3" />
@@ -154,43 +156,64 @@ export default function ProfileDashboard() {
   // Fetch profile on mount
   // ---------------------------------------------------------------------------
 
-  useEffect(() => {
-    if (!user) return;
+useEffect(() => {
+  if (!user) return;
 
-    const fetchProfile = async () => {
-      setFetchLoading(true);
-      setFetchError(null);
+  const fetchProfile = async () => {
+    setFetchLoading(true);
+    setFetchError(null);
 
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("id, email, full_name, role, department, created_at, updated_at")
+    try {
+      // Check Students Table
+      const { data: student, error: studentError } = await supabase
+        .from("students")
+        .select("*")
         .eq("id", user.id)
         .maybeSingle();
 
-      if (error) {
-        console.error("Error fetching profile:", error);
-        setFetchError("Failed to load profile. Please try refreshing the page.");
+      if (studentError) throw studentError;
+
+      console.log(student);
+      if (student) {
+        setProfile({ ...student, role: "student" });
+        setForm({
+          full_name: student.name ?? "",
+          department: student.department ?? "",
+        });
         setFetchLoading(false);
         return;
       }
 
-      if (!data) {
-        setFetchError("Profile not found. Please contact support.");
+      // Check Faculty Table
+      const { data: faculty, error: facultyError } = await supabase
+        .from("faculty")
+        .select("id, email, full_name, department, created_at, updated_at")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      if (facultyError) throw facultyError;
+
+      if (faculty) {
+        setProfile({ ...faculty, role: "faculty" });
+        setForm({
+          full_name: faculty.full_name ?? "",
+          department: faculty.department ?? "",
+        });
         setFetchLoading(false);
         return;
       }
 
-      setProfile(data as Profile);
-      // Seed editable form fields
-      setForm({
-        full_name: data.full_name ?? "",
-        department: data.department ?? "",
-      });
+      setFetchError("Profile not found.");
+    } catch (error) {
+      console.error("Error fetching profile:", error);
+      setFetchError("Failed to load profile. Please try again.");
+    } finally {
       setFetchLoading(false);
-    };
+    }
+  };
 
-    fetchProfile();
-  }, [user]);
+  fetchProfile();
+}, [user]);
 
   // ---------------------------------------------------------------------------
   // Handle form input changes
@@ -205,42 +228,43 @@ export default function ProfileDashboard() {
   // ---------------------------------------------------------------------------
 
   const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!user || !profile) return;
+  e.preventDefault();
+  if (!user || !profile) return;
 
-    setSaving(true);
+  setSaving(true);
 
-    const { error } = await supabase
-      .from("profiles")
-      .update({
-        full_name: form.full_name.trim() || null,
-        department: form.department.trim() || null,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", user.id);
+  const tableName = profile.role === "student" ? "students" : "faculty";
 
-    setSaving(false);
+  const { error } = await supabase
+    .from(tableName)
+    .update({
+      full_name: form.full_name.trim() || null,
+      department: form.department.trim() || null,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", user.id);
 
-    if (error) {
-      console.error("Error updating profile:", error);
-      toast.error("Failed to save changes. Please try again.");
-      return;
-    }
+  setSaving(false);
 
-    // Optimistically update local state so UI reflects save immediately
-    setProfile((prev) =>
-      prev
-        ? {
-            ...prev,
-            full_name: form.full_name.trim() || null,
-            department: form.department.trim() || null,
-            updated_at: new Date().toISOString(),
-          }
-        : prev
-    );
+  if (error) {
+    console.error("Error updating profile:", error);
+    toast.error("Failed to save changes. Please try again.");
+    return;
+  }
 
-    toast.success("Profile updated successfully!");
-  };
+  setProfile((prev) =>
+    prev
+      ? {
+          ...prev,
+          full_name: form.full_name.trim() || null,
+          department: form.department.trim() || null,
+          updated_at: new Date().toISOString(),
+        }
+      : prev
+  );
+
+  toast.success("Profile updated successfully!");
+};
 
   // ---------------------------------------------------------------------------
   // Render
@@ -268,7 +292,7 @@ export default function ProfileDashboard() {
           <CardHeader className="pb-4">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <CardTitle className="text-lg font-semibold">
+                <CardTitle className="text-lg font-semibold text-primary">
                   Profile Information
                 </CardTitle>
                 <CardDescription className="text-xs mt-1">
@@ -340,7 +364,7 @@ export default function ProfileDashboard() {
                       type="email"
                       value={profile.email}
                       disabled
-                      className="bg-muted/50 cursor-not-allowed text-muted-foreground"
+                      className="text-white"
                       aria-label="Email address (read-only)"
                     />
                     <p className="text-[10px] text-muted-foreground">
@@ -352,7 +376,7 @@ export default function ProfileDashboard() {
                   <div className="space-y-2">
                     <Label
                       htmlFor="full_name"
-                      className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground uppercase tracking-wider"
+                      className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground   uppercase tracking-wider"
                     >
                       <User className="h-3 w-3" />
                       Full Name
@@ -366,6 +390,7 @@ export default function ProfileDashboard() {
                       placeholder="Enter your full name"
                       maxLength={255}
                       aria-label="Full name"
+                      className="text-muted-foreground"
                     />
                   </div>
 
@@ -388,7 +413,7 @@ export default function ProfileDashboard() {
                           : "Not assigned"
                       }
                       disabled
-                      className="bg-muted/50 cursor-not-allowed text-muted-foreground"
+                      className="text-white"
                       aria-label="Role (read-only)"
                     />
                     <p className="text-[10px] text-muted-foreground">
@@ -431,7 +456,7 @@ export default function ProfileDashboard() {
                       type="text"
                       value={formatDate(profile.created_at)}
                       disabled
-                      className="bg-muted/50 cursor-not-allowed text-muted-foreground"
+                      className="text-white"
                       aria-label="Account creation date (read-only)"
                     />
                   </div>
