@@ -1,11 +1,12 @@
 """Chat/AI assistant endpoints."""
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Header
 from typing import List
 from pydantic import BaseModel
 from app.auth import get_current_user
 from app.services import AIService
 from app.database import get_supabase_client
+import traceback
 
 router = APIRouter()
 
@@ -22,13 +23,22 @@ class ChatResponse(BaseModel):
     role: str = "assistant"
 
 
+
+from fastapi import Header
+
 @router.post("/send", response_model=ChatResponse)
 async def send_message(
     message: ChatMessage,
-    current_user: dict = Depends(get_current_user)
+    authorization: str = Header(None),
+    current_user: dict = Depends(get_current_user),
 ):
     try:
+        # 🔥 extract token safely
+        token = authorization.split(" ")[1] if authorization else None
+
         supabase = get_supabase_client()
+        print("CLIENT TYPE:", type(supabase))   
+
         student_id = current_user.get("sub")
 
         # 1. get/create convo
@@ -41,9 +51,12 @@ async def send_message(
         conversation_id = convo["id"]
 
         # 2. fetch history
-        history = await AIService.get_conversation_messages(supabase, conversation_id)
+        history = await AIService.get_conversation_messages(
+            supabase,
+            conversation_id
+        )
 
-        # 3. format for AI
+        # 3. format messages
         messages = [
             {"role": "system", "content": "You are a helpful lab assistant."}
         ]
@@ -54,7 +67,6 @@ async def send_message(
                 "content": msg["content"]
             })
 
-        # add current user message
         messages.append({
             "role": "user",
             "content": message.content
@@ -63,13 +75,25 @@ async def send_message(
         # 4. AI response
         ai_response = await AIService.get_ai_response(messages)
 
-        # 5. save both messages
-        await AIService.save_message(supabase, conversation_id, "user", message.content)
-        await AIService.save_message(supabase, conversation_id, "assistant", ai_response)
+        # 5. save messages
+        await AIService.save_message(
+            supabase,
+            conversation_id,
+            "user",
+            message.content
+        )
+
+        await AIService.save_message(
+            supabase,
+            conversation_id,
+            "assistant",
+            ai_response
+        )
 
         return ChatResponse(message=ai_response)
 
     except Exception as e:
+        print("CHAT ERROR:", str(e))
         raise HTTPException(
             status_code=500,
             detail=f"Failed to process chat message: {str(e)}"

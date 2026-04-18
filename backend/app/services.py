@@ -26,25 +26,48 @@ class AIService:
     
     @staticmethod
     async def get_or_create_experiment_convo(supabase, student_id, experiment_id):
-        # 1. Try fetch existing
+        print("STEP 1: fetching existing convo")
+
         res = supabase.table("conversations") \
             .select("*") \
             .eq("student_id", student_id) \
             .eq("experiment_id", experiment_id) \
-            .single() \
             .execute()
 
-        if res.data:
+        print("FETCH RESULT:", res)
+
+        if res and res.data:
+            print("FOUND EXISTING")
             return res.data
 
-        # 2. Create if not exists
-        new_convo = supabase.table("conversations").insert({
-            "student_id": student_id,
-            "experiment_id": experiment_id,
-            "type": "experiment"
-        }).execute()
+        print("STEP 2: inserting convo")
 
-        return new_convo.data[0]
+        try:
+            insert_res = supabase.table("conversations").insert({
+                "student_id": student_id,
+                "experiment_id": experiment_id,
+                "type": "experiment"
+            }).execute()
+
+            print("INSERT RESPONSE:", insert_res)
+
+        except Exception as e:
+            print("INSERT ERROR:", repr(e))
+
+        print("STEP 3: fetching after insert")
+
+        res = supabase.table("conversations") \
+            .select("*") \
+            .eq("student_id", student_id) \
+            .eq("experiment_id", experiment_id) \
+            .execute()
+
+        print("FINAL FETCH:", res)
+
+        if not res.data:
+            raise Exception("NO CONVERSATION FOUND AFTER INSERT")
+
+        return res.data[0]
 
     @staticmethod
     async def get_conversation_messages(supabase, conversation_id):
