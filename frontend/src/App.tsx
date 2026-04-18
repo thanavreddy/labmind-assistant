@@ -16,6 +16,10 @@ import StudentCourses from '@/pages/student/StudentCourses';
 import CourseExperiments from '@/pages/student/CourseExperiments';
 import ExperimentDetails from '@/pages/student/ExperimentDetails';
 import FacultyDashboard from '@/pages/FacultyDashboard';
+import FacultyCourses from '@/pages/FacultyCourses';
+import FacultyExperiments from '@/pages/FacultyExperiments';
+import FacultyStudents from '@/pages/FacultyStudents';
+import FacultySubmissions from '@/pages/FacultySubmissions';
 import AIAssistant from '@/pages/AIAssistant';
 import ConceptCheck from '@/pages/ConceptCheck';
 import LabRecordEditor from '@/pages/LabRecordEditor';
@@ -101,6 +105,38 @@ export default function App() {
               element={
                 <ProtectedRoute allowedRole="faculty">
                   <FacultyDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/faculty-courses"
+              element={
+                <ProtectedRoute allowedRole="faculty">
+                  <FacultyCourses />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/faculty-experiments"
+              element={
+                <ProtectedRoute allowedRole="faculty">
+                  <FacultyExperiments />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/faculty-students"
+              element={
+                <ProtectedRoute allowedRole="faculty">
+                  <FacultyStudents />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/faculty-submissions"
+              element={
+                <ProtectedRoute allowedRole="faculty">
+                  <FacultySubmissions />
                 </ProtectedRoute>
               }
             />
