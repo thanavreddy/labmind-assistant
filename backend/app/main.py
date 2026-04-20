@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from app.config import get_settings
 from app.routes import router
+from app.chatdem import router as dem_router
 
 settings = get_settings()
 
@@ -27,7 +28,7 @@ app.add_middleware(
 
 
 # Include all routes
-app.include_router(router, prefix="/api")
+app.include_router(dem_router)
 
 
 @app.get("/")
