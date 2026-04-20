@@ -13,8 +13,6 @@ import {
   BookOpen,
   FlaskConical,
   Users,
-  ClipboardCheck,
-  Bot,
   User,
   LogOut,
   ChevronRight,
@@ -40,8 +38,6 @@ const facultyNav: NavItem[] = [
   { label: "Courses",      href: "/faculty-courses",      icon: BookOpen,        expandable: true },
   { label: "Experiments",  href: "/faculty-experiments",  icon: FlaskConical,    expandable: true },
   { label: "Students",     href: "/faculty-students",     icon: Users },
-  { label: "Submissions",  href: "/faculty-submissions",  icon: ClipboardCheck },
-  { label: "AI Assistant", href: "/assistant",            icon: Bot },
 ];
 
 const profileNav: NavItem[] = [

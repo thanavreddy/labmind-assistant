@@ -8,7 +8,6 @@ import Landing from '@/pages/Landing';
 import Login from '@/pages/Login';
 import SignUp from '@/pages/SignUp';
 import AuthCallback from '@/pages/AuthCallback';
-import SelectRole from '@/pages/SelectRole';
 import Dashboard from '@/pages/Dashboard';
 
 // Protected pages
@@ -17,6 +16,7 @@ import CourseExperiments from '@/pages/student/CourseExperiments';
 import ExperimentDetails from '@/pages/student/ExperimentDetails';
 import FacultyDashboard from '@/pages/FacultyDashboard';
 import FacultyCourses from '@/pages/FacultyCourses';
+import CourseDetails from '@/pages/CourseDetails';
 import FacultyExperiments from '@/pages/FacultyExperiments';
 import FacultyStudents from '@/pages/FacultyStudents';
 import FacultySubmissions from '@/pages/FacultySubmissions';
@@ -37,7 +37,6 @@ export default function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<SignUp />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
-            <Route path="/select-role" element={<SelectRole />} />
 
             {/* Role-Based Dashboard Redirect */}
             <Route
@@ -113,6 +112,14 @@ export default function App() {
               element={
                 <ProtectedRoute allowedRole="faculty">
                   <FacultyCourses />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/faculty-courses/:courseId"
+              element={
+                <ProtectedRoute allowedRole="faculty">
+                  <CourseDetails />
                 </ProtectedRoute>
               }
             />

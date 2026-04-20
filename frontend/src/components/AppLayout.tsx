@@ -11,8 +11,6 @@ import { NavLink, useNavigate, Link } from "react-router-dom";
 import {
   Home,
   FlaskConical,
-  MessageSquare,
-  ClipboardCheck,
   FileEdit,
   Users,
   LayoutDashboard,
@@ -22,6 +20,8 @@ import {
   Menu,
   X,
   BookOpen,
+  ClipboardCheck,
+  MessageSquare,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/lib/supabase";
@@ -56,7 +56,6 @@ const facultyNav: NavItem[] = [
 ];
 
 const sharedNav: NavItem[] = [
-  { label: "AI Assistant", href: "/assistant",  icon: MessageSquare },
   { label: "My Profile",   href: "/profile",    icon: UserCircle },
 ];
 
