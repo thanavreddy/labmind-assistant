@@ -7,8 +7,13 @@ from app.auth import get_current_user
 from app.services import AIService
 from app.database import get_supabase_client
 import traceback
+from app.config import get_settings
+import requests
+import httpx
 
 router = APIRouter()
+
+settings = get_settings()
 
 
 class ChatMessage(BaseModel):
@@ -122,3 +127,37 @@ async def get_chat_history(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to fetch chat history: {str(e)}"
         )
+
+@router.get("/test")
+def test_supabase():
+    url = f"{settings.supabase_url}/rest/v1/conversations"
+
+    headers = {
+        "apikey": settings.supabase_service_key,
+        "Authorization": f"Bearer {settings.supabase_service_key}",
+    }
+
+    # 🔹 requests test
+    try:
+        r1 = requests.get(url, headers=headers)
+        requests_result = {
+            "status": r1.status_code,
+            "body": r1.text[:200]
+        }
+    except Exception as e:
+        requests_result = {"error": str(e)}
+
+    # 🔹 httpx test
+    try:
+        r2 = httpx.get(url, headers=headers)
+        httpx_result = {
+            "status": r2.status_code,
+            "body": r2.text[:200]
+        }
+    except Exception as e:
+        httpx_result = {"error": str(e)}
+
+    return {
+        "requests": requests_result,
+        "httpx": httpx_result
+    }
